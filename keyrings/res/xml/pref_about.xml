@@ -1,0 +1,17 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory 
+        android:title="@string/pref_header_about">
+		<Preference
+	    android:title="@string/pref_title_version"
+	    android:summary="1.0"/>
+		
+		<com.zws.keyrings.view.LicensePreference
+	    android:title="@string/pref_title_license"
+	    android:summary="This software under the terms of the GNU GPL v3"
+	    android:dialogLayout="@layout/license_gpl"/>
+		
+		<com.zws.keyrings.view.LicensePreference
+	    android:title="@string/pref_title_third_party"
+	    android:dialogLayout="@layout/license_apache"/>
+	</PreferenceCategory>
+</PreferenceScreen>

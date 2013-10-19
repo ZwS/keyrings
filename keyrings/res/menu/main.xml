@@ -1,0 +1,25 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <group android:id="@+id/keyrings">
+        <item android:id="@+id/add_keyring" 
+            android:title="@string/add_keyring"
+            android:showAsAction="never"/>
+    </group>
+    <group android:id="@+id/passwords">
+        <item android:id="@+id/add_secret"
+			android:title="@string/add_password"
+			android:showAsAction="ifRoom"
+			android:icon="@android:drawable/ic_menu_add"/>
+        <item android:id="@+id/remove_keyring" 
+            android:title="@string/remove_keyring"
+			android:showAsAction="never"/>
+        <item android:id="@+id/change_keyring_password" 
+            android:title="@string/change_keyring_password"
+			android:showAsAction="never"/>
+    </group>
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:showAsAction="never"
+        android:title="@string/action_settings"/>
+</menu>
