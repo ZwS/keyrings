@@ -17,11 +17,15 @@
     <string name="add_keyring">Add keyring</string>
     <string name="add_password">Add password</string>
     <string name="remove_keyring">Remove keyring</string>
+    <string name="rename_keyring">Rename keyring</string>
     <string name="change_keyring_password">Change keyring password</string>
+    <string name="changing_keyring_password">Changing %s password</string>
+	<string name="enter_current_keyring_password">Enter current password for keyring</string>
     <string name="title_activity_keyring_add">Add keyring</string>
     <string name="input_keyring_name">Keyring name:</string>
     <string name="input_keyring_password">Keyring password (leave blank for non encrypted keyring):</string>
-    <string name="input_keyring_re_password">Confirm password:</string>
+    <string name="input_new_keyring_password">New keyring password (leave blank for non encrypted keyring):</string>
+    <string name="input_confirm_keyring_password">Confirm password:</string>
     <string name="message_no_name">Please, fill keyring name first.</string>
 	<string name="message_password_different">Passwords not matching.</string>
 	<string name="dialog_title_error">Unable to create keyring.</string>

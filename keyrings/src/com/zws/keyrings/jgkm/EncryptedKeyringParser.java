@@ -196,6 +196,7 @@ public class EncryptedKeyringParser implements KeyringParser {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		KeyringOutputStream w = new KeyringOutputStream(baos);
 		
+		setPassword(k.getPassword());
 		writeHeader(w, k);
 		writeItemList(w, k);
 		
