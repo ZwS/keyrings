@@ -284,10 +284,9 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 				k.setPassword(mCurrentPassword.getText().toString());
             	if (k.check()) {
             		if (mNewPassword.getText().toString().equals(mConfirmNewPassword.getText().toString())) {
-            			k.setPassword(mNewPassword.getText().toString());
             			try {
-            				k.getKeyringItems(); //reread keyring before writing
-							k.write();
+            				k.getKeyringItems();
+            				k.changePassword(mNewPassword.getText().toString());
 							dialog.dismiss();
 						} catch (IOException e) {
 							Toast.makeText(getApplicationContext(), R.string.dialog_title_error, Toast.LENGTH_SHORT).show();
@@ -357,7 +356,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 			for (String keyring : filelist) {
 				KeyringInfo k;
 				try {
-					k = new KeyringInfo(Globals.keyring_dir + keyring);
+					k = new KeyringInfo(new File(Globals.keyring_dir + keyring));
 					mKeyringAdapter.add(k);
 				} catch (Exception e) {
 					e.printStackTrace();

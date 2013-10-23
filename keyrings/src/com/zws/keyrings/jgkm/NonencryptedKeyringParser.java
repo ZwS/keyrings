@@ -12,8 +12,8 @@ public class NonencryptedKeyringParser implements KeyringParser {
 	private final File file;
 	private Wini data;
 	
-	public NonencryptedKeyringParser (String keyring) throws IOException {
-		file = new File(keyring);
+	public NonencryptedKeyringParser (File keyring) throws IOException {
+		file = keyring;
 		data = new Wini(file);
 	}
 	

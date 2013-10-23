@@ -1,6 +1,7 @@
 package com.zws.keyrings.jgkm;
 
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -13,12 +14,12 @@ public class KeyringInfo {
 	private int flags;
 	private int lock_timeout;
 	private String password;
+	private File file;
 	
 	public ArrayList<ItemInfo> items;
 	
 	private KeyringParser parser; 
 	
-	//manual creation
 	public KeyringInfo(String name, String password) throws IOException {
 		this.name = name;
 		this.password = password;
@@ -27,11 +28,23 @@ public class KeyringInfo {
 		flags = 0;
 		lock_timeout = 0;
 		items = new ArrayList<ItemInfo>(0);
+		
+		String keyring_file = name.toLowerCase().replace("[^a-z0-9]", "_");
+		String keyring = Globals.keyring_dir + keyring_file + ".keyring";
+		
+		File f = new File(keyring);
+		
+		if(f.exists() || f.isDirectory())
+			throw new IOException("File already exists");
+		file = f;
+		file.createNewFile();
+		
 		parser = ParserFactory.createParser(this);
 	}
 	
-	public KeyringInfo(String keyring) throws IOException {
-		parser = ParserFactory.getParser(keyring);
+	public KeyringInfo(File file) throws IOException {
+		this.file = file;
+		parser = ParserFactory.getParser(this.file);
 		parser.readKeyringInfo(this);
 	}
 	
@@ -98,7 +111,9 @@ public class KeyringInfo {
 	}
 	
 	public boolean check() {
-		return ((EncryptedKeyringParser) parser).decrypt();
+		if (parser instanceof EncryptedKeyringParser)
+			return ((EncryptedKeyringParser) parser).decrypt();
+		return true;
 	}
 	
 	public void write() throws IOException {
@@ -116,5 +131,15 @@ public class KeyringInfo {
 				id = i.getId() + 1;
 		}
 		return id;
+	}
+
+	public void changePassword(String new_password) throws IOException {
+		password = new_password;
+		parser = ParserFactory.createParser(this);
+		parser.readKeyringInfo(this);
+	}
+
+	public File getFile() {
+		return file;
 	}
 }

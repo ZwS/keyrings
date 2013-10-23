@@ -7,7 +7,7 @@ import java.io.RandomAccessFile;
 import android.util.Log;
 
 class ParserFactory {
-	static KeyringParser getParser(String keyring) throws IOException {
+	static KeyringParser getParser(File keyring) throws IOException {
 		KeyringParser parser;
 		
 		byte[] header = new byte[16];
@@ -20,6 +20,8 @@ class ParserFactory {
 			Log.e("jgkm", "Error while reading file " + keyring);
 			Log.e("jgkm", e.toString());
 		}
+		
+		
 
 		if (new String(header).equals(EncryptedKeyringParser.HEADER))
 			parser = new EncryptedKeyringParser(keyring);
@@ -33,19 +35,10 @@ class ParserFactory {
 	
 	static KeyringParser createParser(KeyringInfo k) throws IOException {
 		KeyringParser parser;
-		String keyring_file = k.getName().toLowerCase().replace("[^a-z0-9]", "_");
-		String keyring = Globals.keyring_dir + keyring_file + ".keyring";
-		
-		File f = new File (keyring);
-		if(f.exists() || f.isDirectory())
-			throw new IOException("File already exists");
-
-		f.createNewFile();
-		
 		if (k.getPassword().isEmpty())
-			parser = new NonencryptedKeyringParser(keyring);
+			parser = new NonencryptedKeyringParser(k.getFile());
 		else
-			parser = new EncryptedKeyringParser(keyring);
+			parser = new EncryptedKeyringParser(k.getFile());
 		parser.create(k);
 		return parser;
 	}
