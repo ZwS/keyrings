@@ -33,8 +33,8 @@ public class EncryptedKeyringParser implements KeyringParser {
 	private ArrayList<ItemInfo> items;
 	private ByteBuffer decrypted;
 	
-	public EncryptedKeyringParser (String keyring) throws IOException {
-		file = new File(keyring);
+	public EncryptedKeyringParser (File keyring) throws IOException {
+		file = keyring;
 		byte [] data = new byte[(int)file.length()];
 		DataInputStream dis = new DataInputStream((new FileInputStream(file)));
 		dis.readFully(data);
@@ -196,6 +196,7 @@ public class EncryptedKeyringParser implements KeyringParser {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		KeyringOutputStream w = new KeyringOutputStream(baos);
 		
+		setPassword(k.getPassword());
 		writeHeader(w, k);
 		writeItemList(w, k);
 		

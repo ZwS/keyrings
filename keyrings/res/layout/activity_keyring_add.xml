@@ -57,7 +57,7 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:layout_below="@+id/KeyringPassword"
-        android:text="@string/input_keyring_re_password"
+        android:text="@string/input_confirm_keyring_password"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <EditText

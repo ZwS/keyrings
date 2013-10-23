@@ -1,17 +1,24 @@
 package com.zws.keyrings;
 
 import java.io.File;
+import java.io.IOException;
 
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -19,9 +26,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.zws.keyrings.R;
 import com.zws.keyrings.jgkm.Globals;
@@ -54,6 +64,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
 		mDrawerList.setAdapter(MainActivity.mKeyringAdapter);
+		registerForContextMenu(mDrawerList);
 		mDrawerList.setOnItemClickListener(this);
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 		
@@ -199,6 +210,14 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 	}
 	
 	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+	                                ContextMenuInfo menuInfo) {
+	    super.onCreateContextMenu(menu, v, menuInfo);
+	    MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.keyring_context_menu, menu);
+	}
+	
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		 // The action bar home/up action should open or close the drawer.
 		 // ActionBarDrawerToggle will take care of this.
@@ -213,10 +232,10 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 			this.startActivity(intent);
 			break;
 		case R.id.remove_keyring:
-			delete();
+			delete(position);
 			break;
 		case R.id.change_keyring_password: 
-			
+			changePassword(position);
 			break;
 		case R.id.action_settings:
 			intent = new Intent(this, SettingsActivity.class);
@@ -233,12 +252,69 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 		return super.onOptionsItemSelected(item);
 	}
 	
-	private void delete() {
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+	    AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+	    switch (item.getItemId()) {
+	        case R.id.remove_keyring:
+	        	delete((int) info.id);
+	            return true;
+	        case R.id.change_keyring_password: 
+				changePassword((int) info.id);
+				return true;
+	        default:
+	            return super.onContextItemSelected(item);
+	    }
+	}
+	
+	private void changePassword(int position) {
+		final KeyringInfo k = MainActivity.mKeyringAdapter.getItem(position);
+		
+		View mDialogLayout = getLayoutInflater().inflate(R.layout.changing_keyring_pasword, null);
+		final EditText mCurrentPassword = (EditText) mDialogLayout.findViewById(R.id.current_password);
+		final EditText mNewPassword = (EditText) mDialogLayout.findViewById(R.id.new_keyring_password);
+		final EditText mConfirmNewPassword = (EditText) mDialogLayout.findViewById(R.id.confirm_new_keyring_password);
+		
+		AlertDialog mDialog = new Builder(this)
+		.setTitle(String.format(getResources().getString(R.string.changing_keyring_password), k.getName()))
+	    .setView(mDialogLayout)
+	    .setPositiveButton(R.string.ok, new OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				k.setPassword(mCurrentPassword.getText().toString());
+            	if (k.check()) {
+            		if (mNewPassword.getText().toString().equals(mConfirmNewPassword.getText().toString())) {
+            			try {
+            				k.getKeyringItems();
+            				k.changePassword(mNewPassword.getText().toString());
+							dialog.dismiss();
+						} catch (IOException e) {
+							Toast.makeText(getApplicationContext(), R.string.dialog_title_error, Toast.LENGTH_SHORT).show();
+							e.printStackTrace();
+						}
+            		} else {
+            			Toast.makeText(getApplicationContext(), R.string.message_password_different, Toast.LENGTH_SHORT).show();
+            		}
+            	} else {
+            		Toast.makeText(getApplicationContext(), R.string.wrong_password, Toast.LENGTH_SHORT).show();
+            		dialog.dismiss();
+            	}
+			}
+        })
+	    .setNegativeButton(R.string.cancel, null)
+	    .create();
+		
+		mDialog.show();
+	}
+	
+	private void delete(int position) {
 		KeyringInfo k = MainActivity.mKeyringAdapter.getItem(position);
 		k.delete();
 		MainActivity.mKeyringAdapter.remove(k);
-		FragmentManager fragmentManager = getFragmentManager();
-		fragmentManager.beginTransaction().remove(mPasswordfragment).commit();
+		if (mPasswordfragment != null) {
+			FragmentManager fragmentManager = getFragmentManager();
+			fragmentManager.beginTransaction().remove(mPasswordfragment).commit();
+		}
 	}
 
 	@Override
@@ -280,7 +356,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 			for (String keyring : filelist) {
 				KeyringInfo k;
 				try {
-					k = new KeyringInfo(Globals.keyring_dir + keyring);
+					k = new KeyringInfo(new File(Globals.keyring_dir + keyring));
 					mKeyringAdapter.add(k);
 				} catch (Exception e) {
 					e.printStackTrace();
