@@ -3,6 +3,7 @@ package com.zws.keyrings;
 import java.io.File;
 import java.io.IOException;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -59,11 +60,12 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 		setContentView(R.layout.activity_main);
 		
 		MainActivity.mKeyringAdapter = new ArrayAdapter<KeyringInfo>(this, R.layout.drawer_list_item);
-		MainActivity.createKeyringList();
-
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
 		mDrawerList.setAdapter(MainActivity.mKeyringAdapter);
+		
+		MainActivity.createKeyringList();
+		
 		registerForContextMenu(mDrawerList);
 		mDrawerList.setOnItemClickListener(this);
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -353,17 +355,38 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 		
 		String[] filelist = keyring_dir.list(new Filter());
 		if (filelist != null) {
-			for (String keyring : filelist) {
+			new ReadFilesTask().execute(filelist);
+		} else {
+			Log.d(Globals.TAG, "No files found.");
+		}
+	}
+	
+	private static class ReadFilesTask extends AsyncTask<String, KeyringInfo, Integer> {
+		
+		@Override
+		protected Integer doInBackground(String... params) {
+			for (String keyring : params) {
 				KeyringInfo k;
 				try {
 					k = new KeyringInfo(new File(Globals.keyring_dir + keyring));
-					mKeyringAdapter.add(k);
+					publishProgress(k);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				if (isCancelled()) break;
 			}
-		} else {
-			Log.d(Globals.TAG, "No files found.");
+			return params.length;
+		}
+		
+		protected void onProgressUpdate(KeyringInfo... progress) {
+			Log.d(Globals.TAG, "Called update.");
+			mKeyringAdapter.add(progress[0]);
+			mKeyringAdapter.notifyDataSetChanged();
+	     }
+
+		@Override
+		protected void onPostExecute(Integer result) {
+	         mKeyringAdapter.notifyDataSetChanged();
 		}
 	}
 }
