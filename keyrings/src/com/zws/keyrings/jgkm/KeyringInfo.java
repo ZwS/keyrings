@@ -30,7 +30,7 @@ public class KeyringInfo {
 		items = new ArrayList<ItemInfo>(0);
 		
 		String keyring_file = name.toLowerCase().replace("[^a-z0-9]", "_");
-		String keyring = Globals.keyring_dir + keyring_file + ".keyring";
+		String keyring = Globals.getKeyringDir() + File.separator + keyring_file + ".keyring";
 		
 		File f = new File(keyring);
 		

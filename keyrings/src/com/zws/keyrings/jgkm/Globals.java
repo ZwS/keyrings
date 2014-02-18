@@ -1,8 +1,25 @@
 package com.zws.keyrings.jgkm;
 
-import android.os.Environment;
+import java.io.File;
+
+import android.content.Context;
 
 public class Globals {
-	public final static String TAG = "Keyrings";
-	public final static String keyring_dir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/keyrings/";
+	private static String TAG = "Keyrings";
+	private static String KeyringDir;
+	
+	public static void init(Context c) {
+		KeyringDir = c.getFilesDir().getAbsolutePath() + File.separator + "keyrings";
+	}
+
+	public static String getTAG() {
+		return TAG;
+	}
+	
+	public static String getKeyringDir() {
+		if (KeyringDir == null) {
+			throw new RuntimeException("KeyringDir not initializated.");
+		}
+		return KeyringDir;
+	}
 }

@@ -1,9 +1,7 @@
 package com.zws.keyrings;
 
-import java.io.File;
 import java.io.IOException;
 
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -17,7 +15,6 @@ import android.content.res.Configuration;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -56,6 +53,8 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		Globals.init(getApplicationContext());
+		
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		
@@ -64,7 +63,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
 		mDrawerList.setAdapter(MainActivity.mKeyringAdapter);
 		
-		MainActivity.createKeyringList();
+		createKeyringList();
 		
 		registerForContextMenu(mDrawerList);
 		mDrawerList.setOnItemClickListener(this);
@@ -317,6 +316,8 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 			FragmentManager fragmentManager = getFragmentManager();
 			fragmentManager.beginTransaction().remove(mPasswordfragment).commit();
 		}
+		
+		mDrawerLayout.openDrawer(mDrawerList);
 	}
 
 	@Override
@@ -346,47 +347,7 @@ public class MainActivity extends Activity implements ListView.OnItemClickListen
 	}
 
 	public static void createKeyringList() {
-		mKeyringAdapter.clear();
-		
-		File keyring_dir = new File(Globals.keyring_dir);
-		
-		if (!keyring_dir.exists())
-			keyring_dir.mkdirs();
-		
-		String[] filelist = keyring_dir.list(new Filter());
-		if (filelist != null) {
-			new ReadFilesTask().execute(filelist);
-		} else {
-			Log.d(Globals.TAG, "No files found.");
-		}
-	}
-	
-	private static class ReadFilesTask extends AsyncTask<String, KeyringInfo, Integer> {
-		
-		@Override
-		protected Integer doInBackground(String... params) {
-			for (String keyring : params) {
-				KeyringInfo k;
-				try {
-					k = new KeyringInfo(new File(Globals.keyring_dir + keyring));
-					publishProgress(k);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				if (isCancelled()) break;
-			}
-			return params.length;
-		}
-		
-		protected void onProgressUpdate(KeyringInfo... progress) {
-			Log.d(Globals.TAG, "Called update.");
-			mKeyringAdapter.add(progress[0]);
-			mKeyringAdapter.notifyDataSetChanged();
-	     }
-
-		@Override
-		protected void onPostExecute(Integer result) {
-	         mKeyringAdapter.notifyDataSetChanged();
-		}
+		KeyringList list = new  KeyringList(mKeyringAdapter);
+		list.createKeyringList();
 	}
 }

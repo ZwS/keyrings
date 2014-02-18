@@ -45,7 +45,10 @@ public class KeyringActivity extends Activity implements OnClickListener {
 
 	private void createKeyring() {
 		try {
-			new KeyringInfo(mKeyringName.getText().toString(), mPassword.getText().toString());
+			String name = mKeyringName.getText().toString();
+			String password = mPassword.getText().toString();
+			
+			new KeyringInfo(name, password);
 		} catch (IOException e) {
 			AlertDialog.Builder b = new AlertDialog.Builder(this);
 			b.setTitle(getResources().getString(R.string.dialog_title_error))
@@ -53,12 +56,14 @@ public class KeyringActivity extends Activity implements OnClickListener {
             .setCancelable(true)
             .setNeutralButton(getResources().getString(android.R.string.ok), null)
             .show();
-			Log.d(Globals.TAG, e.toString());
+			Log.d(Globals.getTAG(), e.toString());
 			e.printStackTrace();
 			return;
 		}
+
 		MainActivity.createKeyringList();
-		this.finish();
+		
+		onBackPressed();
 	}
 
 	private boolean validate() {
